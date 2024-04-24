@@ -5,7 +5,7 @@ import axios from "axios"
 
 const GlobalContext = createContext();
 
-const baseURL = "http://localhost:5000/"
+const baseURL = "https://dashboard-backend-7jfm.onrender.com/"
 
 
 const GlobalProvider = ({children})=>{
