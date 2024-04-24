@@ -53,7 +53,7 @@ router.get("/get-incomes", async (req,res)=>{
 
 });
 
-
+// 
 // delete an income
 router.delete("/delete-income/:id", async (req,res)=>{
     try {
