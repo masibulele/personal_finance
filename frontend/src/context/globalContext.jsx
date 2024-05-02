@@ -6,12 +6,14 @@ import axios from "axios"
 const GlobalContext = createContext();
 
 const baseURL = "https://dashboard-backend-7jfm.onrender.com/"
+// const baseURL = "http://localhost:5000/"
 
 
 const GlobalProvider = ({children})=>{
     const [myIncomes, setIncomes] = useState([]);
     const [myExpenses, setExpense] = useState([]);
     const [error, setError] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
 
     // adds an income to database
@@ -117,10 +119,29 @@ const GlobalProvider = ({children})=>{
 
     const transactionsHistory = ()=>{
         const history = [...myIncomes, ...myExpenses].sort((a,b)=>{
-            return new Date(b.createdAt) - new Date(a.createdAt)
+            return new Date(b.date) - new Date(a.date)
         });
         return history.slice(0,3)
     };
+
+    // send request with form data
+    const addCsvData = async (fileData)=>{
+        const config ={
+            headers:{
+                'content-type':'multipart/form-data',
+
+            }
+        }
+        const response = await axios.post(`${baseURL}csv`,fileData,config)
+        .catch((err)=>{
+            console.log(err.response.data.message)
+            setError(err.response.data.message)
+        })
+
+        console.log(response.data)
+
+
+    }
 
 
     return(
@@ -139,7 +160,11 @@ const GlobalProvider = ({children})=>{
             getTotalBalance,
             transactionsHistory,
             error,
-            setError
+            setError,
+            selectedFile,
+            setSelectedFile,
+            addCsvData,
+            baseURL
         }}>
             {children}
         </GlobalContext.Provider>

@@ -1,6 +1,9 @@
 import express from "express";
 import { incomeModel } from "../models/incomeModel.js";
 import { expenseModel } from "../models/expenseModel.js";
+import csv from "csvtojson";
+import multer from "multer";
+import moment from "moment"
 
 const router = express.Router();
 
@@ -142,6 +145,70 @@ router.delete("/delete-expense/:id", async (req,res)=>{
 
 });
 
+
+// add data from csv file
+
+const upload = multer({dest: 'uploads/'});
+
+router.post('/csv',upload.single('file'), (req,res,next)=>{
+    csv()
+    .fromFile(req.file.path)
+    .then((jsonObj)=>{
+        let incomeListTrans =[];
+        let expenseListTrans =[];
+        for(var i= 0; i<jsonObj.length; i++){
+            let newRow = {};
+            newRow.title = jsonObj[i]['title'];
+            newRow.amount = jsonObj[i]['amount'];
+            newRow.type = jsonObj[i]['type'];
+            newRow.date = moment(jsonObj[i]['date'],"DD/MM/YYYY").toDate();
+            newRow.category = jsonObj[i]['category'];
+            newRow.description = jsonObj[i]['description'];
+
+            if(newRow.type==="income"){
+                incomeListTrans.push(newRow);
+            }else{
+                expenseListTrans.push(newRow);
+            }
+
+        }
+
+        incomeModel.insertMany(incomeListTrans)
+        .then(()=>{
+            expenseModel.insertMany(expenseListTrans)
+            .then(()=>{
+                res.status(201).send({
+                    message: "Successfully Uploaded income and expenses!"
+                })
+    
+            }).catch((err)=>{
+                console.log(err)
+                res.status(500).send({
+                    message: err.message
+                })
+    
+            })
+
+        }).catch((err)=>{
+            console.log(err)
+            res.status(500).send({
+                message: err.message
+            })
+
+        })
+       
+
+    })
+    .catch((error)=>{
+        console.log(error)
+
+        res.status(500).send(
+            {message:error.message}
+        )
+
+    })
+
+})
 
 
 
